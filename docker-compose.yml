@@ -1,0 +1,42 @@
+version: "3.1"
+services:
+    frontend:
+      image: node:current-alpine
+      working_dir: /home/node/app
+      volumes:
+          - ./frontend:/home/node/app
+      environment:
+          NODE_ENV: development
+      command: "npm run serve"
+    postgres:
+      image: postgres:9.5-alpine
+      container_name: secret-server-api-postgres
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=q
+        - POSTGRES_DB=secret_server
+      ports:
+       - "5432:5432"
+      networks:
+            secret-server:
+    webserver:
+      image: nginx:alpine
+      container_name: secret-server-api-webserver
+      working_dir: /application
+      volumes:
+          - ./application:/application
+          - ./sourcefiles/nginx:/etc/nginx/conf.d
+      ports:
+       - "80:80"
+      networks:
+            secret-server:
+    php-fpm:
+      build: sourcefiles/php-fpm
+      container_name: secret-server-api-php-fpm
+      working_dir: /application
+      volumes:
+        - ./application:/application
+      networks:
+          secret-server:
+networks:
+    secret-server:
